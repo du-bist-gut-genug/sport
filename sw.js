@@ -1,39 +1,95 @@
-/* Service worker : hors-ligne + notification de fin de repos.
-   Change VERSION à chaque modification d'index.html pour forcer la mise à jour. */
-const VERSION = "muscu-v13";
+/* Service worker — Programme hypertrophie
+   v14 : le manifeste et la navigation passent en reseau-d'abord,
+   les icones restent en cache-d'abord. */
+
+const VERSION = "muscu-v14";
+
+/* Mis en cache a l'installation. Un fichier manquant ne fait plus
+   echouer toute l'installation. */
 const FICHIERS = [
-  "./", "./index.html", "./manifest.webmanifest",
-  "./icone-192.png", "./icone-512.png", "./icone-maskable-512.png", "./apple-touch-icon.png"
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icone-192.png",
+  "./icone-512.png",
+  "./icone-maskable-512.png",
+  "./apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(VERSION)
+      .then((c) =>
+        Promise.all(
+          FICHIERS.map((f) =>
+            c.add(new Request(f, { cache: "reload" })).catch(() => null)
+          )
+        )
+      )
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((noms) => Promise.all(noms.filter((n) => n !== VERSION).map((n) => caches.delete(n))))
+      .then((noms) =>
+        Promise.all(noms.filter((n) => n !== VERSION).map((n) => caches.delete(n)))
+      )
       .then(() => self.clients.claim())
   );
 });
 
+/* ── reseau d'abord : on demande toujours au serveur, le cache ne sert
+      que de filet de secours hors ligne ── */
+function reseauDabord(requete) {
+  return fetch(requete)
+    .then((r) => {
+      if (r && r.status === 200 && r.type === "basic") {
+        const clone = r.clone();
+        caches.open(VERSION).then((c) => c.put(requete, clone));
+      }
+      return r;
+    })
+    .catch(() =>
+      caches.match(requete).then((rep) => rep || caches.match("./index.html"))
+    );
+}
+
+/* ── cache d'abord : pour les ressources figees (icones) ── */
+function cacheDabord(requete) {
+  return caches.match(requete).then((rep) => {
+    if (rep) return rep;
+    return fetch(requete).then((r) => {
+      if (r && r.status === 200 && r.type === "basic") {
+        const clone = r.clone();
+        caches.open(VERSION).then((c) => c.put(requete, clone));
+      }
+      return r;
+    });
+  });
+}
+
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request).then((rep) => {
-      const reseau = fetch(e.request)
-        .then((r) => {
-          if (r && r.status === 200) {
-            const clone = r.clone();
-            caches.open(VERSION).then((c) => c.put(e.request, clone));
-          }
-          return r;
-        })
-        .catch(() => rep);
-      return rep || reseau;
-    })
-  );
+
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const navigation =
+    e.request.mode === "navigate" ||
+    (e.request.destination === "document");
+
+  const manifeste =
+    e.request.destination === "manifest" ||
+    url.pathname.endsWith(".webmanifest") ||
+    url.pathname.endsWith("manifest.json");
+
+  if (navigation || manifeste) {
+    e.respondWith(reseauDabord(e.request));
+  } else {
+    e.respondWith(cacheDabord(e.request));
+  }
 });
 
 /* ── chrono de repos en arrière-plan ──

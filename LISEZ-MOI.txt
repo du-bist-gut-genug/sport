@@ -1,52 +1,79 @@
-PROGRAMME HYPERTROPHIE - installation sur telephone
-====================================================
+PROGRAMME HYPERTROPHIE — version corrigee v14
+==============================================
 
-CONTENU DU DOSSIER
-  index.html                 l'application
-  manifest.webmanifest       nom, icone, couleurs (rend l'app installable)
-  sw.js                      service worker (fait fonctionner l'app hors-ligne)
-  icone-192.png / icone-512.png / icone-maskable-512.png / apple-touch-icon.png
+Ce zip contient TOUS les fichiers du site, deja corriges.
+Il corrige le probleme "Chrome dit que l'app est deja installee".
 
-ETAPE 1 - METTRE EN LIGNE
-  Uploade TOUT le contenu de ce dossier (pas le dossier lui-meme) dans un
-  sous-dossier de ton hebergement, par exemple :  /www/muscu/
-  Adresse obtenue :  https://tondomaine.fr/muscu/
+Ce qui a change par rapport a ce qui est en ligne :
+  - sw.js               : muscu-v13 -> muscu-v14, manifeste en reseau-d'abord
+  - manifest.webmanifest: "id" -> /muscu-app?v=3
+  - les autres fichiers sont identiques, mais reuploade tout,
+    c'est plus simple et sans risque.
 
-  IMPORTANT : le HTTPS est obligatoire. Sans lui, le service worker ne
-  s'enregistre pas et tu perds le mode hors-ligne. Active le certificat
-  Let's Encrypt gratuit dans ton panneau d'hebergement si ce n'est pas fait.
 
-ETAPE 2 - INSTALLER SUR LE TELEPHONE
+MARCHE A SUIVRE
+---------------
 
-  LE PLUS SIMPLE : ouvre l'adresse, va dans Reglages (derniere icone en bas)
-  et suis la carte "Installer l'application" tout en haut. Elle sait dire
-  si ton navigateur peut installer, et sinon pourquoi.
+1. Decompresse ce zip. Tu dois obtenir 8 fichiers EN VRAC
+   (index.html, sw.js, manifest.webmanifest, les 4 images, ce fichier).
+   Il ne doit PAS y avoir de dossier autour.
 
-  Sinon, a la main :
+2. Va sur https://github.com/du-bist-gut-genug/sportttttttt
 
-  Android (Chrome)
-    Ouvre l'adresse, puis menu ... > "Installer l'application"
-    (ou "Ajouter a l'ecran d'accueil"). Chrome fabrique une vraie application
-    installee, avec son icone dans le tiroir d'applications.
+3. Bouton "Add file" en haut a droite -> "Upload files"
 
-  iPhone (Safari obligatoirement, pas Chrome)
-    Ouvre l'adresse, bouton Partager, puis "Sur l'ecran d'accueil".
+4. Glisse les 8 fichiers dans la zone, d'un seul coup.
+   GitHub remplacera les anciens automatiquement.
 
-  Resultat identique : icone, plein ecran, aucune barre d'adresse,
-  fonctionne en mode avion.
+5. Descends en bas -> bouton vert "Commit changes"
 
-ETAPE 3 - METTRE A JOUR PLUS TARD
-  Si tu modifies index.html, ouvre sw.js et change la ligne :
-      const VERSION = "muscu-v13";
-  en "muscu-v13", "muscu-v3", etc. Sans ca le telephone continuera d'afficher
-  l'ancienne version en cache.
+6. Attends 1 a 2 minutes, le temps que GitHub Pages republie.
 
-SI TU VEUX VRAIMENT UN FICHIER .APK
-  Va sur https://www.pwabuilder.com, colle l'adresse de l'etape 1, et il te
-  genere un APK signe. Ca n'apporte rien de plus que l'etape 2, sauf si tu
-  veux publier sur le Play Store un jour.
 
-ATTENTION - TES DONNEES
-  Elles restent stockees dans le navigateur du telephone, pas sur le serveur.
-  Mettre l'app en ligne ne synchronise rien entre appareils.
-  Exporte le JSON une fois par semaine depuis Reglages.
+VERIFICATION AVANT DE TOUCHER AU TELEPHONE
+------------------------------------------
+
+Ouvre dans ton navigateur :
+  https://du-bist-gut-genug.github.io/sportttttttt/sw.js
+
+Tu dois y lire "muscu-v14" et le mot "reseauDabord".
+
+Tant que tu lis encore "muscu-v13", ce n'est pas republie :
+attends un peu et recharge. Inutile d'essayer d'installer avant.
+
+
+SUR LE TELEPHONE, DANS CET ORDRE
+--------------------------------
+
+1. Appui long sur l'ancienne icone "Muscu" -> Desinstaller.
+   Important : l'identite de l'app a change, l'ancienne installation
+   devient une app fantome qui bloque la proposition.
+
+2. Ouvre Chrome sur https://du-bist-gut-genug.github.io/sportttttttt/
+   Charge la page DEUX fois :
+     - le 1er chargement recupere le nouveau service worker
+     - le 2e sert enfin le manifeste a jour
+
+3. Menu ... de Chrome -> "Installer l'application" doit apparaitre.
+
+
+SI CA RESISTE ENCORE
+--------------------
+
+Chrome -> Parametres -> Confidentialite et securite
+       -> Effacer les donnees de navigation
+       -> coche "Images et fichiers en cache" -> Effacer
+
+Puis recharge le site deux fois.
+
+
+A SAVOIR
+--------
+
+Ne rechange plus le champ "id" du manifeste sans raison.
+Chaque nouvelle valeur cree une nouvelle app aux yeux de Chrome,
+et l'ancienne icone reste orpheline sur le telephone.
+
+Tes donnees (seances, charges, historique, serie de jours) sont
+stockees dans le navigateur et ne sont PAS effacees par cette
+mise a jour. Elles survivent a la reinstallation de l'app.
