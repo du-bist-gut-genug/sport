@@ -1,0 +1,52 @@
+PROGRAMME HYPERTROPHIE - installation sur telephone
+====================================================
+
+CONTENU DU DOSSIER
+  index.html                 l'application
+  manifest.webmanifest       nom, icone, couleurs (rend l'app installable)
+  sw.js                      service worker (fait fonctionner l'app hors-ligne)
+  icone-192.png / icone-512.png / icone-maskable-512.png / apple-touch-icon.png
+
+ETAPE 1 - METTRE EN LIGNE
+  Uploade TOUT le contenu de ce dossier (pas le dossier lui-meme) dans un
+  sous-dossier de ton hebergement, par exemple :  /www/muscu/
+  Adresse obtenue :  https://tondomaine.fr/muscu/
+
+  IMPORTANT : le HTTPS est obligatoire. Sans lui, le service worker ne
+  s'enregistre pas et tu perds le mode hors-ligne. Active le certificat
+  Let's Encrypt gratuit dans ton panneau d'hebergement si ce n'est pas fait.
+
+ETAPE 2 - INSTALLER SUR LE TELEPHONE
+
+  LE PLUS SIMPLE : ouvre l'adresse, va dans Reglages (derniere icone en bas)
+  et suis la carte "Installer l'application" tout en haut. Elle sait dire
+  si ton navigateur peut installer, et sinon pourquoi.
+
+  Sinon, a la main :
+
+  Android (Chrome)
+    Ouvre l'adresse, puis menu ... > "Installer l'application"
+    (ou "Ajouter a l'ecran d'accueil"). Chrome fabrique une vraie application
+    installee, avec son icone dans le tiroir d'applications.
+
+  iPhone (Safari obligatoirement, pas Chrome)
+    Ouvre l'adresse, bouton Partager, puis "Sur l'ecran d'accueil".
+
+  Resultat identique : icone, plein ecran, aucune barre d'adresse,
+  fonctionne en mode avion.
+
+ETAPE 3 - METTRE A JOUR PLUS TARD
+  Si tu modifies index.html, ouvre sw.js et change la ligne :
+      const VERSION = "muscu-v13";
+  en "muscu-v13", "muscu-v3", etc. Sans ca le telephone continuera d'afficher
+  l'ancienne version en cache.
+
+SI TU VEUX VRAIMENT UN FICHIER .APK
+  Va sur https://www.pwabuilder.com, colle l'adresse de l'etape 1, et il te
+  genere un APK signe. Ca n'apporte rien de plus que l'etape 2, sauf si tu
+  veux publier sur le Play Store un jour.
+
+ATTENTION - TES DONNEES
+  Elles restent stockees dans le navigateur du telephone, pas sur le serveur.
+  Mettre l'app en ligne ne synchronise rien entre appareils.
+  Exporte le JSON une fois par semaine depuis Reglages.
